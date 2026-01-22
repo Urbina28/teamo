@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gael vs Osiel</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --gael: #48dbfb;
+            --osiel: #1dd1a1;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        h1 { margin-top: 0; font-size: 1.8rem; color: var(--text); }
+
+        #status {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #feca57;
+            height: 1.5rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 90vw;
+            max-width: 350px;
+            aspect-ratio: 1/1;
+        }
+
+        .cell {
+            background-color: var(--card);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #reset {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            background: #ff6b6b;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+        }
+
+        /* Ventana de Ganador */
+        #winner-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #winner-message {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gael vs Osiel</h1>
+    <div id="status">Conectando...</div>
+    
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <button id="reset">Reiniciar</button>
+
+    <div id="winner-overlay">
+        <div id="winner-message"></div>
+        <button onclick="document.getElementById('reset').click()">Jugar de nuevo</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHYSY7wUcZ0zPGDXSRgpwDLcN6iTDjg6I",
+            authDomain: "minijuego-eabcb.firebaseapp.com",
+            databaseURL: "https://minijuego-eabcb-default-rtdb.firebaseio.com",
+            projectId: "minijuego-eabcb",
+            storageBucket: "minijuego-eabcb.firebasestorage.app",
+            messagingSenderId: "90763304589",
+            appId: "1:90763304589:web:91e927504cb88fca6e8cc4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const gameRef = ref(db, 'partida_celular');
+
+        const cells = document.querySelectorAll('.cell');
+        const statusDisplay = document.getElementById('status');
+        const overlay = document.getElementById('winner-overlay');
+        const winMsg = document.getElementById('winner-message');
+
+        const winLines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+        onValue(gameRef, (snap) => {
+            const data = snap.val() || { board: Array(9).fill(""), turn: "X", active: true };
+            
+            overlay.style.display = "none";
+            
+            data.board.forEach((val, i) => {
+                cells[i].innerText = val;
+                cells[i].style.color = val === "X" ? "var(--gael)" : "var(--osiel)";
+                cells[i].style.pointerEvents = (val || !data.active) ? "none" : "auto";
+            });
+
+            let winner = null;
+            for (let [a,b,c] of winLines) {
+                if (data.board[a] && data.board[a] === data.board[b] && data.board[a] === data.board[c]) {
+                    winner = data.board[a];
+                }
+            }
+
+            if (winner || !data.board.includes("")) {
+                overlay.style.display = "flex";
+                if (winner) {
+                    const name = winner === "X" ? "GAEL" : "OSIEL";
+                    winMsg.innerText = `¡${name} HA GANADO! 🎉`;
+                    winMsg.style.color = winner === "X" ? "var(--gael)" : "var(--osiel)";
+                } else {
+                    winMsg.innerText = "¡EMPATE! 🤝";
+                    winMsg.style.color = "white";
+                }
+            } else {
+                statusDisplay.innerText = `Turno de: ${data.turn === "X" ? "Gael" : "Osiel"}`;
+            }
+        });
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                const i = cell.dataset.index;
+                onValue(gameRef, (snap) => {
+                    const data = snap.val() || { board: Array(9).fill(""), turn: "X", active: true };
+                    if (!data.board[i] && data.active) {
+                        data.board[i] = data.turn;
+                        data.turn = data.turn === "X" ? "O" : "X";
+                        set(gameRef, data);
+                    }
+                }, { onlyOnce: true });
+            });
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            set(gameRef, { board: Array(9).fill(""), turn: "X", active: true });
+        });
+    </script>
+</body>
+</html>
