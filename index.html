@@ -9,60 +9,78 @@
         :root { --p: #ff477e; --bg: #fdf0f5; }
         * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; }
         body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* HEADER */
-        .header { background: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; height: 65px; z-index: 10; }
-        #timer { font-weight: 800; color: var(--p); font-size: 22px; width: 70px; }
-        #word { font-weight: bold; background: #fff; padding: 6px 15px; border-radius: 20px; border: 2px solid var(--p); font-size: 16px; color: #333; flex-grow: 1; text-align: center; margin: 0 10px; }
 
-        /* JUEGO */
-        #main-game { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; gap: 10px; }
+        /* PANTALLA DE CARGA */
+        #splash {
+            position: fixed; inset: 0; background: white; z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease;
+        }
+
+        /* OVERLAY DE INICIO - He puesto TU foto aquí también */
+        #overlay { 
+            position: fixed; inset: 0; z-index: 500; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: white; text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover;
+        }
+
+        .photo-circle {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 4px solid white;
+            background: url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover;
+            margin-bottom: 20px;
+        }
+
+        .header { background: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; height: 65px; position: relative; z-index: 10; }
+        #timer { font-weight: 800; color: var(--p); font-size: 22px; width: 70px; }
+        #word { font-weight: bold; background: #fff0f5; padding: 6px 15px; border-radius: 20px; border: 2px solid var(--p); font-size: 16px; flex-grow: 1; text-align: center; margin: 0 10px; }
+
+        #main-game { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; gap: 10px; position: relative; z-index: 1; }
         .canvas-container { position: relative; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); flex: 1; display: flex; flex-direction: column; }
         #my-section { flex: 1.6; border: 3px solid var(--p); } 
-        canvas { width: 100%; height: 100%; display: block; background: white; cursor: crosshair; }
+        canvas { width: 100%; height: 100%; display: block; background: white; touch-action: none; }
 
-        /* CONTROLES PRO */
-        .app-controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.95); padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .tool-group { display: flex; align-items: center; gap: 10px; }
-        input[type="range"] { width: 80px; accent-color: var(--p); }
-        input[type="color"] { border: none; width: 35px; height: 35px; border-radius: 50%; background: none; cursor: pointer; }
-
-        .label { position: absolute; top: 8px; left: 15px; font-size: 11px; font-weight: 800; color: #bbb; pointer-events: none; letter-spacing: 1px; }
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: 0.5s; }
-        .btn-start { padding: 18px 50px; border: none; border-radius: 40px; background: var(--p); color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 126, 0.3); }
+        .app-controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.95); padding: 8px 15px; border-radius: 50px; z-index: 100; pointer-events: auto; }
+        input[type="range"] { width: 70px; accent-color: var(--p); }
+        input[type="color"] { border: none; width: 30px; height: 30px; border-radius: 50%; background: none; }
+        
+        .btn-start { padding: 18px 50px; border: none; border-radius: 40px; background: var(--p); color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; pointer-events: auto; }
         .hidden { display: none !important; }
+        .label { position: absolute; top: 8px; left: 15px; font-size: 10px; font-weight: 800; color: #bbb; pointer-events: none; }
     </style>
 </head>
 <body>
 
+    <div id="splash">
+        <div class="photo-circle" style="border-color: var(--p);"></div>
+        <h2 style="color: var(--p);">Gael & Mar Studio</h2>
+    </div>
+
     <div id="overlay">
-        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Gael ❤️ Mar</h1>
-        <p style="margin-bottom: 30px; opacity: 0.8;">¿Listos para el desafío?</p>
-        <button class="btn-start" id="startBtn">COMENZAR</button>
+        <div class="photo-circle"></div>
+        <h1 style="font-size: 2.2rem; margin: 10px 0;">¿Listos?</h1>
+        <button class="btn-start" id="startBtn">EMPEZAR</button>
     </div>
 
     <div class="header">
         <div id="timer">01:00</div>
-        <div id="word">ESPERANDO...</div>
+        <div id="word">...</div>
         <button id="reset" style="background:none; border:none; font-size: 22px; cursor:pointer;">🔄</button>
     </div>
 
     <div id="main-game">
         <div class="canvas-container" id="my-section">
-            <div class="label" id="my-label">TU LIENZO</div>
+            <div class="label" id="my-label">TÚ</div>
             <canvas id="myCanvas"></canvas>
-            
             <div class="app-controls">
-                <div class="tool-group">
-                    <input type="color" id="color" value="#ff477e">
-                    <input type="range" id="size" min="2" max="25" value="6">
-                </div>
-                <button onclick="clearDraw()" style="border:none; background:none; font-size:24px; cursor:pointer;">🗑️</button>
+                <input type="color" id="color" value="#ff477e">
+                <input type="range" id="size" min="2" max="25" value="6">
+                <button id="btnBorrar" style="border:none; background:none; font-size:24px; cursor:pointer;">🗑️</button>
             </div>
         </div>
-
         <div class="canvas-container">
-            <div class="label" id="partner-label">ELLA DIBUJA</div>
+            <div class="label" id="partner-label">PAREJA</div>
             <canvas id="partnerCanvas"></canvas>
         </div>
     </div>
@@ -82,16 +100,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let myName = prompt("¿Quién eres? (Gael/Mar)").trim().toLowerCase();
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').style.opacity = '0';
+                setTimeout(() => document.getElementById('splash').classList.add('hidden'), 800);
+            }, 2000);
+        });
+
+        let myName = prompt("¿Gael o Mar?").trim().toLowerCase();
         if (myName !== 'mar') myName = 'gael';
         const partnerName = (myName === 'gael') ? 'mar' : 'gael';
-        
-        document.getElementById('my-label').innerText = "GAEL (TÚ)";
-        document.getElementById('partner-label').innerText = "MAR (ELLA)";
-        if(myName === 'mar') {
-            document.getElementById('my-label').innerText = "MAR (TÚ)";
-            document.getElementById('partner-label').innerText = "GAEL (ÉL)";
-        }
+        document.getElementById('my-label').innerText = myName.toUpperCase();
+        document.getElementById('partner-label').innerText = partnerName.toUpperCase();
 
         const mC = document.getElementById('myCanvas'), pC = document.getElementById('partnerCanvas');
         const mCtx = mC.getContext('2d'), pCtx = pC.getContext('2d');
@@ -100,9 +120,9 @@
             mC.width = mC.clientWidth; mC.height = mC.clientHeight;
             pC.width = pC.clientWidth; pC.height = pC.clientHeight;
         }
-        window.onresize = res; setTimeout(res, 500);
+        window.addEventListener('resize', res);
+        res(); setTimeout(res, 1000);
 
-        // --- DIBUJO ---
         let draw = false, lx = 0, ly = 0;
         const getXY = (e) => {
             const r = mC.getBoundingClientRect();
@@ -110,50 +130,43 @@
             const cY = e.touches ? e.touches[0].clientY : e.clientY;
             return [cX - r.left, cY - r.top];
         };
-
         const dLine = (ctx, x1, y1, x2, y2, c, sz) => {
             ctx.strokeStyle = c; ctx.lineWidth = sz; ctx.lineCap = "round"; ctx.lineJoin = "round";
             ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
         };
 
-        mC.addEventListener('mousedown', (e) => { draw = true; [lx, ly] = getXY(e); });
-        mC.addEventListener('touchstart', (e) => { draw = true; [lx, ly] = getXY(e); }, {passive:false});
-
-        const handleMove = (e) => {
+        const start = (e) => { draw = true; [lx, ly] = getXY(e); };
+        const move = (e) => {
             if (!draw) return;
             if (e.cancelable) e.preventDefault();
             const [x, y] = getXY(e);
             const col = document.getElementById('color').value;
             const sz = document.getElementById('size').value;
-            
             dLine(mCtx, lx, ly, x, y, col, sz);
             push(ref(db, `drawings/${myName}`), { x1: lx, y1: ly, x2: x, y2: y, c: col, s: sz, w: mC.width, h: mC.height });
             [lx, ly] = [x, y];
         };
+        const stop = () => draw = false;
 
-        mC.addEventListener('mousemove', handleMove);
-        mC.addEventListener('touchmove', handleMove, {passive:false});
-        window.addEventListener('mouseup', () => draw = false);
-        window.addEventListener('touchend', () => draw = false);
+        mC.addEventListener('mousedown', start); mC.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', stop);
+        mC.addEventListener('touchstart', start, {passive:false});
+        mC.addEventListener('touchmove', move, {passive:false});
+        window.addEventListener('touchend', stop);
 
-        // --- TIEMPO REAL (VER AL OTRO) ---
-        // Escuchamos cuando el OTRO añade un trazo nuevo
         onChildAdded(ref(db, `drawings/${partnerName}`), (snap) => {
             const d = snap.val();
-            const rx = pC.width / d.w;
-            const ry = pC.height / d.h;
-            dLine(pCtx, d.x1*rx, d.y1*ry, d.x2*rx, d.y2*ry, d.c, d.s);
+            dLine(pCtx, d.x1*(pC.width/d.w), d.y1*(pC.height/d.h), d.x2*(pC.width/d.w), d.y2*(pC.height/d.h), d.c, d.s);
         });
 
-        // También escuchamos el tuyo para que al recargar se mantenga
-        onChildAdded(ref(db, `drawings/${myName}`), (snap) => {
-            const d = snap.val();
-            const rx = mC.width / d.w;
-            const ry = mC.height / d.h;
-            dLine(mCtx, d.x1*rx, d.y1*ry, d.x2*rx, d.y2*ry, d.c, d.s);
+        // REPARACIÓN: Limpieza real cuando se borra en Firebase
+        onValue(ref(db, 'drawings'), (snap) => {
+            if (!snap.exists()) {
+                mCtx.clearRect(0,0,mC.width,mC.height);
+                pCtx.clearRect(0,0,pC.width,pC.height);
+            }
         });
 
-        // --- LÓGICA DE JUEGO ---
         let timer;
         onValue(ref(db, 'state'), (snap) => {
             const st = snap.val();
@@ -168,18 +181,22 @@
                 }, 1000);
             } else {
                 document.getElementById('overlay').classList.remove('hidden');
-                mCtx.clearRect(0,0,mC.width,mC.height); pCtx.clearRect(0,0,pC.width,pC.height);
             }
         });
 
         document.getElementById('startBtn').onclick = () => {
-            const w = ["PIZZA", "GATO", "PLAYA", "ANILLO", "HELADO", "UN BEBÉ", "CASTILLO"];
+            const w = ["PIZZA", "GATO", "BESO", "SOL", "PLAYA", "CORAZÓN"];
             set(ref(db, 'state'), { status: 'playing', word: w[Math.floor(Math.random()*w.length)], endTime: Date.now() + 60000 });
             remove(ref(db, 'drawings'));
         };
 
         document.getElementById('reset').onclick = () => set(ref(db, 'state/status'), 'idle');
-        window.clearDraw = () => remove(ref(db, `drawings/${myName}`));
+
+        // BOTÓN BORRAR CORREGIDO
+        document.getElementById('btnBorrar').onclick = () => {
+            remove(ref(db, `drawings/${myName}`));
+        };
+
     </script>
 </body>
 </html>
