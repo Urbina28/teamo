@@ -2,195 +2,208 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gael vs Osiel</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love & Draw | Battle 🎨</title>
     <style>
-        :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --gael: #48dbfb;
-            --osiel: #1dd1a1;
-            --text: #ffffff;
-        }
+        :root { --primary: #ff477e; --secondary: #70d6ff; --bg: #f8f9fa; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* OVERLAYS */
+        #game-overlay, #results-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; text-align: center; padding: 20px; }
+        .hidden { display: none !important; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
+        /* HEADER */
+        .top-bar { background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #timer { font-size: 28px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+        #word-display { font-size: 20px; font-weight: 700; color: #333; background: #fff0f5; padding: 5px 20px; border-radius: 20px; border: 2px solid var(--primary); }
 
-        h1 { margin-top: 0; font-size: 1.8rem; color: var(--text); }
+        /* CANVASES */
+        #game-container { display: flex; flex-grow: 1; padding: 15px; gap: 15px; }
+        .canvas-box { flex: 1; display: flex; flex-direction: column; position: relative; background: white; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .canvas-label { padding: 10px; font-weight: bold; color: #888; text-align: center; border-bottom: 1px solid #f0f0f0; }
+        canvas { flex-grow: 1; width: 100%; border-radius: 0 0 20px 20px; touch-action: none; cursor: crosshair; }
+        #partner-box { border: 3px solid var(--primary); }
 
-        #status {
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            color: #feca57;
-            height: 1.5rem;
-        }
+        /* CONTROLES */
+        .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 50px; z-index: 10; }
+        .btn { padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-start { background: var(--primary); color: white; font-size: 20px; padding: 15px 40px; }
+        .btn-vote { background: white; color: var(--primary); font-size: 18px; margin: 10px; }
 
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 90vw;
-            max-width: 350px;
-            aspect-ratio: 1/1;
-        }
-
-        .cell {
-            background-color: var(--card);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3.5rem;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        #reset {
-            margin-top: 40px;
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            background: #ff6b6b;
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
-        }
-
-        /* Ventana de Ganador */
-        #winner-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        #winner-message {
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 0 20px;
-        }
+        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
     </style>
 </head>
 <body>
 
-    <h1>Gael vs Osiel</h1>
-    <div id="status">Conectando...</div>
-    
-    <div class="board" id="board">
-        <div class="cell" data-index="0"></div>
-        <div class="cell" data-index="1"></div>
-        <div class="cell" data-index="2"></div>
-        <div class="cell" data-index="3"></div>
-        <div class="cell" data-index="4"></div>
-        <div class="cell" data-index="5"></div>
-        <div class="cell" data-index="6"></div>
-        <div class="cell" data-index="7"></div>
-        <div class="cell" data-index="8"></div>
+    <div id="game-overlay">
+        <h1>✨ Dibujo por Parejas ✨</h1>
+        <p>¿Quién dibujará mejor la palabra secreta?</p>
+        <button class="btn btn-start" id="startBtn">¡EMPEZAR JUEGO!</button>
     </div>
 
-    <button id="reset">Reiniciar</button>
+    <div id="results-overlay" class="hidden">
+        <h1 id="result-title">¡TIEMPO FUERA! ⏰</h1>
+        <p>Observen ambos dibujos... ¿Quién ganó?</p>
+        <div style="display: flex;">
+            <button class="btn btn-vote" onclick="vote('me')">¡El mío es mejor! 😎</button>
+            <button class="btn btn-vote" onclick="vote('partner')">¡El suyo es mejor! ❤️</button>
+        </div>
+        <button class="btn" id="resetBtn" style="margin-top: 30px; background: #555; color: white;">Volver a jugar</button>
+    </div>
 
-    <div id="winner-overlay">
-        <div id="winner-message"></div>
-        <button onclick="document.getElementById('reset').click()">Jugar de nuevo</button>
+    <div class="top-bar">
+        <div id="timer">01:00</div>
+        <div id="word-display">? ? ?</div>
+        <div style="width: 50px;"></div> </div>
+
+    <div id="game-container">
+        <div class="canvas-box" id="my-box">
+            <div class="canvas-label">TU LIENZO</div>
+            <canvas id="myCanvas"></canvas>
+            <div class="controls">
+                <input type="color" id="colorPicker" value="#ff477e">
+                <input type="range" id="sizePicker" min="2" max="15" value="5">
+                <button onclick="clearMyCanvas()" style="background:none; border:none; color:white; cursor:pointer;">🗑️</button>
+            </div>
+        </div>
+        <div class="canvas-box" id="partner-box">
+            <div class="canvas-label">EL DIBUJO DE ELLA</div>
+            <canvas id="partnerCanvas"></canvas>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // CONFIGURACIÓN (Remplaza con tus datos reales)
         const firebaseConfig = {
-            apiKey: "AIzaSyAHYSY7wUcZ0zPGDXSRgpwDLcN6iTDjg6I",
-            authDomain: "minijuego-eabcb.firebaseapp.com",
-            databaseURL: "https://minijuego-eabcb-default-rtdb.firebaseio.com",
-            projectId: "minijuego-eabcb",
-            storageBucket: "minijuego-eabcb.firebasestorage.app",
-            messagingSenderId: "90763304589",
-            appId: "1:90763304589:web:91e927504cb88fca6e8cc4"
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            databaseURL: "https://TU_PROYECTO.firebaseio.com",
+            projectId: "TU_PROYECTO",
+            appId: "TU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const gameRef = ref(db, 'partida_celular');
 
-        const cells = document.querySelectorAll('.cell');
-        const statusDisplay = document.getElementById('status');
-        const overlay = document.getElementById('winner-overlay');
-        const winMsg = document.getElementById('winner-message');
+        const myId = Math.random().toString(36).substring(7);
+        const myCanvas = document.getElementById('myCanvas');
+        const pCanvas = document.getElementById('partnerCanvas');
+        const mCtx = myCanvas.getContext('2d');
+        const pCtx = pCanvas.getContext('2d');
 
-        const winLines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        const words = ["Amor", "Pizza", "Gato", "Castillo", "Coche", "Playa", "Dinosaurio", "Anillo", "Beso", "Luna"];
 
-        onValue(gameRef, (snap) => {
-            const data = snap.val() || { board: Array(9).fill(""), turn: "X", active: true };
-            
-            overlay.style.display = "none";
-            
-            data.board.forEach((val, i) => {
-                cells[i].innerText = val;
-                cells[i].style.color = val === "X" ? "var(--gael)" : "var(--osiel)";
-                cells[i].style.pointerEvents = (val || !data.active) ? "none" : "auto";
+        // Ajustar tamaño al cargar
+        function resize() {
+            myCanvas.width = myCanvas.offsetWidth;
+            myCanvas.height = myCanvas.offsetHeight;
+            pCanvas.width = pCanvas.offsetWidth;
+            pCanvas.height = pCanvas.offsetHeight;
+        }
+        window.onload = resize;
+
+        // --- SISTEMA DE JUEGO ---
+        document.getElementById('startBtn').onclick = () => {
+            const word = words[Math.floor(Math.random() * words.length)];
+            set(ref(db, 'game'), {
+                status: 'playing',
+                word: word,
+                startTime: Date.now()
             });
+            remove(ref(db, 'drawings'));
+        };
 
-            let winner = null;
-            for (let [a,b,c] of winLines) {
-                if (data.board[a] && data.board[a] === data.board[b] && data.board[a] === data.board[c]) {
-                    winner = data.board[a];
-                }
-            }
+        onValue(ref(db, 'game'), (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
 
-            if (winner || !data.board.includes("")) {
-                overlay.style.display = "flex";
-                if (winner) {
-                    const name = winner === "X" ? "GAEL" : "OSIEL";
-                    winMsg.innerText = `¡${name} HA GANADO! 🎉`;
-                    winMsg.style.color = winner === "X" ? "var(--gael)" : "var(--osiel)";
-                } else {
-                    winMsg.innerText = "¡EMPATE! 🤝";
-                    winMsg.style.color = "white";
-                }
+            if (data.status === 'playing') {
+                document.getElementById('game-overlay').classList.add('hidden');
+                document.getElementById('results-overlay').classList.add('hidden');
+                document.getElementById('word-display').innerText = data.word;
+                updateTimer(data.startTime);
+            } else if (data.status === 'finished') {
+                document.getElementById('results-overlay').classList.remove('hidden');
             } else {
-                statusDisplay.innerText = `Turno de: ${data.turn === "X" ? "Gael" : "Osiel"}`;
+                document.getElementById('game-overlay').classList.remove('hidden');
             }
         });
 
-        cells.forEach(cell => {
-            cell.addEventListener('click', () => {
-                const i = cell.dataset.index;
-                onValue(gameRef, (snap) => {
-                    const data = snap.val() || { board: Array(9).fill(""), turn: "X", active: true };
-                    if (!data.board[i] && data.active) {
-                        data.board[i] = data.turn;
-                        data.turn = data.turn === "X" ? "O" : "X";
-                        set(gameRef, data);
-                    }
-                }, { onlyOnce: true });
+        function updateTimer(startTime) {
+            const timerInt = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const left = 60 - elapsed;
+                if (left <= 0) {
+                    clearInterval(timerInt);
+                    set(ref(db, 'game/status'), 'finished');
+                } else {
+                    document.getElementById('timer').innerText = `00:${left < 10 ? '0' : ''}${left}`;
+                }
+            }, 1000);
+        }
+
+        // --- DIBUJO ---
+        let drawing = false;
+        myCanvas.onmousedown = () => drawing = true;
+        window.onmouseup = () => { drawing = false; mCtx.beginPath(); };
+
+        myCanvas.onmousemove = (e) => {
+            if (!drawing) return;
+            const rect = myCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const color = document.getElementById('colorPicker').value;
+            const size = document.getElementById('sizePicker').value;
+
+            // Dibujo local
+            mCtx.strokeStyle = color;
+            mCtx.lineWidth = size;
+            mCtx.lineCap = "round";
+            mCtx.lineTo(x, y);
+            mCtx.stroke();
+            mCtx.beginPath();
+            mCtx.moveTo(x, y);
+
+            // Guardar en Firebase
+            push(ref(db, `drawings/${myId}`), { x, y, color, size, w: myCanvas.width, h: myCanvas.height });
+        };
+
+        // Escuchar el dibujo de la pareja
+        onValue(ref(db, 'drawings'), (snapshot) => {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            mCtx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+            
+            snapshot.forEach(userShot => {
+                const points = userShot.val();
+                const ctx = userShot.key === myId ? mCtx : pCtx;
+                const cnv = userShot.key === myId ? myCanvas : pCanvas;
+                
+                ctx.beginPath();
+                Object.values(points).forEach(p => {
+                    ctx.strokeStyle = p.color;
+                    ctx.lineWidth = p.size;
+                    ctx.lineCap = "round";
+                    const rx = cnv.width / p.w;
+                    const ry = cnv.height / p.h;
+                    ctx.lineTo(p.x * rx, p.y * ry);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(p.x * rx, p.y * ry);
+                });
             });
         });
 
-        document.getElementById('reset').addEventListener('click', () => {
-            set(gameRef, { board: Array(9).fill(""), turn: "X", active: true });
-        });
+        window.vote = (type) => {
+            alert(type === 'me' ? "¡Esa es la actitud! 😂" : "¡Qué tierno de tu parte! 😍");
+        };
+
+        document.getElementById('resetBtn').onclick = () => set(ref(db, 'game/status'), 'idle');
+        window.clearMyCanvas = () => remove(ref(db, `drawings/${myId}`));
+
     </script>
 </body>
 </html>
