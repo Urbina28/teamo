@@ -17,7 +17,7 @@
             transition: opacity 0.8s ease;
         }
 
-        /* OVERLAY DE INICIO - He puesto TU foto aquí también */
+        /* OVERLAY DE INICIO */
         #overlay { 
             position: fixed; inset: 0; z-index: 500; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
@@ -102,8 +102,11 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                document.getElementById('splash').style.opacity = '0';
-                setTimeout(() => document.getElementById('splash').classList.add('hidden'), 800);
+                const sp = document.getElementById('splash');
+                if(sp) {
+                    sp.style.opacity = '0';
+                    setTimeout(() => sp.classList.add('hidden'), 800);
+                }
             }, 2000);
         });
 
@@ -154,17 +157,18 @@
         mC.addEventListener('touchmove', move, {passive:false});
         window.addEventListener('touchend', stop);
 
+        // --- SYNC ---
         onChildAdded(ref(db, `drawings/${partnerName}`), (snap) => {
             const d = snap.val();
             dLine(pCtx, d.x1*(pC.width/d.w), d.y1*(pC.height/d.h), d.x2*(pC.width/d.w), d.y2*(pC.height/d.h), d.c, d.s);
         });
 
-        // REPARACIÓN: Limpieza real cuando se borra en Firebase
-        onValue(ref(db, 'drawings'), (snap) => {
-            if (!snap.exists()) {
-                mCtx.clearRect(0,0,mC.width,mC.height);
-                pCtx.clearRect(0,0,pC.width,pC.height);
-            }
+        onValue(ref(db, `drawings/${myName}`), (snap) => {
+            if (!snap.exists()) mCtx.clearRect(0,0,mC.width,mC.height);
+        });
+
+        onValue(ref(db, `drawings/${partnerName}`), (snap) => {
+            if (!snap.exists()) pCtx.clearRect(0,0,pC.width,pC.height);
         });
 
         let timer;
@@ -181,6 +185,7 @@
                 }, 1000);
             } else {
                 document.getElementById('overlay').classList.remove('hidden');
+                clearInterval(timer);
             }
         });
 
@@ -190,13 +195,14 @@
             remove(ref(db, 'drawings'));
         };
 
-        document.getElementById('reset').onclick = () => set(ref(db, 'state/status'), 'idle');
+        document.getElementById('reset').onclick = () => {
+            set(ref(db, 'state/status'), 'idle');
+            remove(ref(db, 'drawings'));
+        };
 
-        // BOTÓN BORRAR CORREGIDO
         document.getElementById('btnBorrar').onclick = () => {
             remove(ref(db, `drawings/${myName}`));
         };
-
     </script>
 </body>
 </html>
