@@ -14,44 +14,31 @@
         * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; }
         body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* PANTALLA DE CARGA */
-        #splash {
-            position: fixed; inset: 0; background: white; z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.8s ease;
-        }
+        /* EL TRUCO: pointer-events: none para que no bloquee el dibujo */
+        #splash { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; pointer-events: none; }
+        #overlay { position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover; transition: opacity 0.3s; }
+        
+        /* Cuando el juego empieza, el overlay no debe recibir clics */
+        #overlay.ingame { opacity: 0; pointer-events: none; }
+        #splash.hidden { opacity: 0; }
 
-        /* OVERLAY DE INICIO */
-        #overlay { 
-            position: fixed; inset: 0; z-index: 500; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: white; text-align: center;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover;
-        }
+        .photo-circle { width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; background: url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover; margin-bottom: 20px; }
 
-        .photo-circle {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 4px solid white;
-            background: url('639844665_961125333134309_1036341987165103815_n.jpg') center/cover;
-            margin-bottom: 20px;
-        }
-
-        .header { background: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; height: 65px; position: relative; z-index: 10; }
+        .header { background: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; height: 65px; z-index: 10; }
         #timer { font-weight: 800; color: var(--p); font-size: 22px; width: 70px; }
         #word { font-weight: bold; background: #fff0f5; padding: 6px 15px; border-radius: 20px; border: 2px solid var(--p); font-size: 16px; flex-grow: 1; text-align: center; margin: 0 10px; }
 
-        #main-game { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; gap: 10px; position: relative; z-index: 1; }
-        .canvas-container { position: relative; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); flex: 1; display: flex; flex-direction: column; }
-        #my-section { flex: 1.6; border: 3px solid var(--p); } 
-        canvas { width: 100%; height: 100%; display: block; background: white; touch-action: none; }
+        #main-game { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; gap: 10px; }
+        .canvas-container { position: relative; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); flex: 1; display: flex; flex-direction: column; border: 2px solid transparent; }
+        #my-section { border-color: var(--p); }
+        canvas { width: 100%; height: 100%; display: block; background: white; touch-action: none; cursor: crosshair; }
 
         .app-controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.95); padding: 8px 15px; border-radius: 50px; z-index: 100; pointer-events: auto; }
         input[type="range"] { width: 70px; accent-color: var(--p); }
         input[type="color"] { border: none; width: 30px; height: 30px; border-radius: 50%; background: none; }
         
-        .btn-start { padding: 18px 50px; border: none; border-radius: 40px; background: var(--p); color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; pointer-events: auto; }
-        .hidden { display: none !important; }
-        .label { position: absolute; top: 8px; left: 15px; font-size: 10px; font-weight: 800; color: #bbb; pointer-events: none; }
+        .btn-start { padding: 15px 40px; border: none; border-radius: 30px; background: var(--p); color: white; font-weight: bold; font-size: 1.2rem; cursor: pointer; pointer-events: auto; }
+        .label { position: absolute; top: 8px; left: 15px; font-size: 10px; font-weight: 800; color: #bbb; z-index: 5; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -63,28 +50,28 @@
 
     <div id="overlay">
         <div class="photo-circle"></div>
-        <h1 style="font-size: 2.2rem; margin: 10px 0;">¿Listos?</h1>
+        <h1 id="status-title" style="margin: 10px 0;">¿Listos?</h1>
         <button class="btn-start" id="startBtn">EMPEZAR</button>
     </div>
 
     <div class="header">
         <div id="timer">01:00</div>
         <div id="word">...</div>
-        <button id="reset" style="background:none; border:none; font-size: 22px; cursor:pointer;">🔄</button>
+        <button id="reset" style="background:none; border:none; font-size: 22px; cursor:pointer; pointer-events: auto;">🔄</button>
     </div>
 
     <div id="main-game">
         <div class="canvas-container" id="my-section">
             <div class="label" id="my-label">TÚ</div>
             <canvas id="myCanvas"></canvas>
-            <div class="app-controls">
+            <div id="myControls" class="app-controls">
                 <input type="color" id="color" value="#ff477e">
                 <input type="range" id="size" min="2" max="25" value="6">
                 <button id="btnBorrar" style="border:none; background:none; font-size:24px; cursor:pointer;">🗑️</button>
             </div>
         </div>
         <div class="canvas-container">
-            <div class="label" id="partner-label">PAREJA</div>
+            <div class="label" id="partner-label">ELLA</div>
             <canvas id="partnerCanvas"></canvas>
         </div>
     </div>
@@ -104,15 +91,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const sp = document.getElementById('splash');
-                if(sp) {
-                    sp.style.opacity = '0';
-                    setTimeout(() => sp.classList.add('hidden'), 800);
-                }
-            }, 2000);
-        });
+        // Ocultar Splash
+        setTimeout(() => { document.getElementById('splash').classList.add('hidden'); }, 1500);
 
         let myName = prompt("¿Gael o Mar?").trim().toLowerCase();
         if (myName !== 'mar') myName = 'gael';
@@ -123,90 +103,98 @@
         const mC = document.getElementById('myCanvas'), pC = document.getElementById('partnerCanvas');
         const mCtx = mC.getContext('2d'), pCtx = pC.getContext('2d');
 
-        function res() {
-            mC.width = mC.clientWidth; mC.height = mC.clientHeight;
-            pC.width = pC.clientWidth; pC.height = pC.clientHeight;
+        function res() { 
+            mC.width = mC.offsetWidth; mC.height = mC.offsetHeight; 
+            pC.width = pC.offsetWidth; pC.height = pC.offsetHeight;
         }
-        window.addEventListener('resize', res);
-        res(); setTimeout(res, 1000);
+        window.addEventListener('resize', res); res();
 
-        let draw = false, lx = 0, ly = 0;
+        // --- SISTEMA DE DIBUJO ---
+        let drawing = false, lx = 0, ly = 0;
+
         const getXY = (e) => {
-            const r = mC.getBoundingClientRect();
-            const cX = e.touches ? e.touches[0].clientX : e.clientX;
-            const cY = e.touches ? e.touches[0].clientY : e.clientY;
-            return [cX - r.left, cY - r.top];
+            const rect = mC.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
         };
-        const dLine = (ctx, x1, y1, x2, y2, c, sz) => {
-            ctx.strokeStyle = c; ctx.lineWidth = sz; ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+        const drawLine = (ctx, x1, y1, x2, y2, color, size) => {
+            ctx.strokeStyle = color; ctx.lineWidth = size;
+            ctx.lineCap = "round"; ctx.lineJoin = "round";
             ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
         };
 
-        const start = (e) => { draw = true; [lx, ly] = getXY(e); };
+        const start = (e) => { drawing = true; [lx, ly] = getXY(e); };
         const move = (e) => {
-            if (!draw) return;
-            if (e.cancelable) e.preventDefault();
+            if (!drawing) return;
             const [x, y] = getXY(e);
-            const col = document.getElementById('color').value;
-            const sz = document.getElementById('size').value;
-            dLine(mCtx, lx, ly, x, y, col, sz);
-            push(ref(db, `drawings/${myName}`), { x1: lx, y1: ly, x2: x, y2: y, c: col, s: sz, w: mC.width, h: mC.height });
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
+            drawLine(mCtx, lx, ly, x, y, color, size);
+            push(ref(db, `drawings/${myName}`), { x1: lx, y1: ly, x2: x, y2: y, c: color, s: size, w: mC.width, h: mC.height });
             [lx, ly] = [x, y];
         };
-        const stop = () => draw = false;
+        const stop = () => drawing = false;
 
-        mC.addEventListener('mousedown', start); mC.addEventListener('mousemove', move);
+        mC.addEventListener('mousedown', start);
+        mC.addEventListener('mousemove', move);
         window.addEventListener('mouseup', stop);
-        mC.addEventListener('touchstart', start, {passive:false});
-        mC.addEventListener('touchmove', move, {passive:false});
+        mC.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive: false});
+        mC.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive: false});
         window.addEventListener('touchend', stop);
 
-        // --- SYNC ---
+        // --- FIREBASE ---
         onChildAdded(ref(db, `drawings/${partnerName}`), (snap) => {
             const d = snap.val();
-            dLine(pCtx, d.x1*(pC.width/d.w), d.y1*(pC.height/d.h), d.x2*(pC.width/d.w), d.y2*(pC.height/d.h), d.c, d.s);
+            drawLine(pCtx, d.x1*(pC.width/d.w), d.y1*(pC.height/d.h), d.x2*(pC.width/d.w), d.y2*(pC.height/d.h), d.c, d.s);
         });
 
-        onValue(ref(db, `drawings/${myName}`), (snap) => {
-            if (!snap.exists()) mCtx.clearRect(0,0,mC.width,mC.height);
-        });
+        onValue(ref(db, `drawings/${myName}`), (snap) => { if (!snap.exists()) mCtx.clearRect(0,0,mC.width,mC.height); });
+        onValue(ref(db, `drawings/${partnerName}`), (snap) => { if (!snap.exists()) pCtx.clearRect(0,0,pC.width,pC.height); });
 
-        onValue(ref(db, `drawings/${partnerName}`), (snap) => {
-            if (!snap.exists()) pCtx.clearRect(0,0,pC.width,pC.height);
-        });
-
+        // --- ESTADOS DEL JUEGO ---
         let timer;
         onValue(ref(db, 'state'), (snap) => {
             const st = snap.val();
+            const ov = document.getElementById('overlay');
             if (st && st.status === 'playing') {
-                document.getElementById('overlay').classList.add('hidden');
+                ov.classList.add('ingame');
+                document.getElementById('myControls').classList.remove('hidden');
                 document.getElementById('word').innerText = st.word;
+                res();
                 clearInterval(timer);
                 timer = setInterval(() => {
                     const diff = Math.max(0, Math.round((st.endTime - Date.now()) / 1000));
                     document.getElementById('timer').innerText = `00:${diff < 10 ? '0' : ''}${diff}`;
-                    if (diff <= 0) { clearInterval(timer); set(ref(db, 'state/status'), 'idle'); }
+                    if (diff <= 0) { 
+                        clearInterval(timer); 
+                        document.getElementById('status-title').innerText = "¡TIEMPO AGOTADO!";
+                        document.getElementById('startBtn').innerText = "VER DIBUJOS";
+                        ov.classList.remove('ingame');
+                    }
                 }, 1000);
             } else {
-                document.getElementById('overlay').classList.remove('hidden');
-                clearInterval(timer);
+                ov.classList.remove('ingame');
+                document.getElementById('startBtn').innerText = "EMPEZAR";
+                document.getElementById('status-title').innerText = "¿LISTOS?";
             }
         });
 
-        document.getElementById('startBtn').onclick = () => {
-            const w = ["PIZZA", "GATO", "BESO", "SOL", "PLAYA", "CORAZÓN"];
-            set(ref(db, 'state'), { status: 'playing', word: w[Math.floor(Math.random()*w.length)], endTime: Date.now() + 60000 });
-            remove(ref(db, 'drawings'));
+        document.getElementById('startBtn').onclick = (e) => {
+            e.stopPropagation();
+            if (document.getElementById('startBtn').innerText === "VER DIBUJOS") {
+                document.getElementById('overlay').classList.add('ingame');
+                document.getElementById('myControls').classList.add('hidden'); 
+            } else {
+                const words = ["PIZZA", "GATO", "BESO", "SOL", "PLAYA", "CORAZÓN", "CENA", "ANILLO", "CINE"];
+                set(ref(db, 'state'), { status: 'playing', word: words[Math.floor(Math.random()*words.length)], endTime: Date.now() + 60000 });
+                remove(ref(db, 'drawings'));
+            }
         };
 
-        document.getElementById('reset').onclick = () => {
-            set(ref(db, 'state/status'), 'idle');
-            remove(ref(db, 'drawings'));
-        };
-
-        document.getElementById('btnBorrar').onclick = () => {
-            remove(ref(db, `drawings/${myName}`));
-        };
+        document.getElementById('reset').onclick = () => { set(ref(db, 'state/status'), 'idle'); remove(ref(db, 'drawings')); };
+        document.getElementById('btnBorrar').onclick = () => remove(ref(db, `drawings/${myName}`));
     </script>
 </body>
 </html>
