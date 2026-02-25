@@ -2,208 +2,184 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love & Draw | Battle 🎨</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Gael & Mar | Studio</title>
     <style>
-        :root { --primary: #ff477e; --secondary: #70d6ff; --bg: #f8f9fa; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --p: #ff477e; --bg: #fdf0f5; }
+        * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* OVERLAYS */
-        #game-overlay, #results-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; text-align: center; padding: 20px; }
-        .hidden { display: none !important; }
-
         /* HEADER */
-        .top-bar { background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        #timer { font-size: 28px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
-        #word-display { font-size: 20px; font-weight: 700; color: #333; background: #fff0f5; padding: 5px 20px; border-radius: 20px; border: 2px solid var(--primary); }
+        .header { background: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; height: 65px; z-index: 10; }
+        #timer { font-weight: 800; color: var(--p); font-size: 22px; width: 70px; }
+        #word { font-weight: bold; background: #fff; padding: 6px 15px; border-radius: 20px; border: 2px solid var(--p); font-size: 16px; color: #333; flex-grow: 1; text-align: center; margin: 0 10px; }
 
-        /* CANVASES */
-        #game-container { display: flex; flex-grow: 1; padding: 15px; gap: 15px; }
-        .canvas-box { flex: 1; display: flex; flex-direction: column; position: relative; background: white; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .canvas-label { padding: 10px; font-weight: bold; color: #888; text-align: center; border-bottom: 1px solid #f0f0f0; }
-        canvas { flex-grow: 1; width: 100%; border-radius: 0 0 20px 20px; touch-action: none; cursor: crosshair; }
-        #partner-box { border: 3px solid var(--primary); }
+        /* JUEGO */
+        #main-game { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; gap: 10px; }
+        .canvas-container { position: relative; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); flex: 1; display: flex; flex-direction: column; }
+        #my-section { flex: 1.6; border: 3px solid var(--p); } 
+        canvas { width: 100%; height: 100%; display: block; background: white; cursor: crosshair; }
 
-        /* CONTROLES */
-        .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 50px; z-index: 10; }
-        .btn { padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-start { background: var(--primary); color: white; font-size: 20px; padding: 15px 40px; }
-        .btn-vote { background: white; color: var(--primary); font-size: 18px; margin: 10px; }
+        /* CONTROLES PRO */
+        .app-controls { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.95); padding: 8px 15px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .tool-group { display: flex; align-items: center; gap: 10px; }
+        input[type="range"] { width: 80px; accent-color: var(--p); }
+        input[type="color"] { border: none; width: 35px; height: 35px; border-radius: 50%; background: none; cursor: pointer; }
 
-        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
+        .label { position: absolute; top: 8px; left: 15px; font-size: 11px; font-weight: 800; color: #bbb; pointer-events: none; letter-spacing: 1px; }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: 0.5s; }
+        .btn-start { padding: 18px 50px; border: none; border-radius: 40px; background: var(--p); color: white; font-weight: bold; font-size: 1.3rem; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 126, 0.3); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="game-overlay">
-        <h1>✨ Dibujo por Parejas ✨</h1>
-        <p>¿Quién dibujará mejor la palabra secreta?</p>
-        <button class="btn btn-start" id="startBtn">¡EMPEZAR JUEGO!</button>
+    <div id="overlay">
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Gael ❤️ Mar</h1>
+        <p style="margin-bottom: 30px; opacity: 0.8;">¿Listos para el desafío?</p>
+        <button class="btn-start" id="startBtn">COMENZAR</button>
     </div>
 
-    <div id="results-overlay" class="hidden">
-        <h1 id="result-title">¡TIEMPO FUERA! ⏰</h1>
-        <p>Observen ambos dibujos... ¿Quién ganó?</p>
-        <div style="display: flex;">
-            <button class="btn btn-vote" onclick="vote('me')">¡El mío es mejor! 😎</button>
-            <button class="btn btn-vote" onclick="vote('partner')">¡El suyo es mejor! ❤️</button>
-        </div>
-        <button class="btn" id="resetBtn" style="margin-top: 30px; background: #555; color: white;">Volver a jugar</button>
-    </div>
-
-    <div class="top-bar">
+    <div class="header">
         <div id="timer">01:00</div>
-        <div id="word-display">? ? ?</div>
-        <div style="width: 50px;"></div> </div>
+        <div id="word">ESPERANDO...</div>
+        <button id="reset" style="background:none; border:none; font-size: 22px; cursor:pointer;">🔄</button>
+    </div>
 
-    <div id="game-container">
-        <div class="canvas-box" id="my-box">
-            <div class="canvas-label">TU LIENZO</div>
+    <div id="main-game">
+        <div class="canvas-container" id="my-section">
+            <div class="label" id="my-label">TU LIENZO</div>
             <canvas id="myCanvas"></canvas>
-            <div class="controls">
-                <input type="color" id="colorPicker" value="#ff477e">
-                <input type="range" id="sizePicker" min="2" max="15" value="5">
-                <button onclick="clearMyCanvas()" style="background:none; border:none; color:white; cursor:pointer;">🗑️</button>
+            
+            <div class="app-controls">
+                <div class="tool-group">
+                    <input type="color" id="color" value="#ff477e">
+                    <input type="range" id="size" min="2" max="25" value="6">
+                </div>
+                <button onclick="clearDraw()" style="border:none; background:none; font-size:24px; cursor:pointer;">🗑️</button>
             </div>
         </div>
-        <div class="canvas-box" id="partner-box">
-            <div class="canvas-label">EL DIBUJO DE ELLA</div>
+
+        <div class="canvas-container">
+            <div class="label" id="partner-label">ELLA DIBUJA</div>
             <canvas id="partnerCanvas"></canvas>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURACIÓN (Remplaza con tus datos reales)
         const firebaseConfig = {
             apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            databaseURL: "https://TU_PROYECTO.firebaseio.com",
-            projectId: "TU_PROYECTO",
+            authDomain: "minijuego-eabcb.firebaseapp.com",
+            databaseURL: "https://minijuego-eabcb-default-rtdb.firebaseio.com/",
+            projectId: "minijuego-eabcb",
             appId: "TU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const myId = Math.random().toString(36).substring(7);
-        const myCanvas = document.getElementById('myCanvas');
-        const pCanvas = document.getElementById('partnerCanvas');
-        const mCtx = myCanvas.getContext('2d');
-        const pCtx = pCanvas.getContext('2d');
-
-        const words = ["Amor", "Pizza", "Gato", "Castillo", "Coche", "Playa", "Dinosaurio", "Anillo", "Beso", "Luna"];
-
-        // Ajustar tamaño al cargar
-        function resize() {
-            myCanvas.width = myCanvas.offsetWidth;
-            myCanvas.height = myCanvas.offsetHeight;
-            pCanvas.width = pCanvas.offsetWidth;
-            pCanvas.height = pCanvas.offsetHeight;
+        let myName = prompt("¿Quién eres? (Gael/Mar)").trim().toLowerCase();
+        if (myName !== 'mar') myName = 'gael';
+        const partnerName = (myName === 'gael') ? 'mar' : 'gael';
+        
+        document.getElementById('my-label').innerText = "GAEL (TÚ)";
+        document.getElementById('partner-label').innerText = "MAR (ELLA)";
+        if(myName === 'mar') {
+            document.getElementById('my-label').innerText = "MAR (TÚ)";
+            document.getElementById('partner-label').innerText = "GAEL (ÉL)";
         }
-        window.onload = resize;
 
-        // --- SISTEMA DE JUEGO ---
-        document.getElementById('startBtn').onclick = () => {
-            const word = words[Math.floor(Math.random() * words.length)];
-            set(ref(db, 'game'), {
-                status: 'playing',
-                word: word,
-                startTime: Date.now()
-            });
-            remove(ref(db, 'drawings'));
+        const mC = document.getElementById('myCanvas'), pC = document.getElementById('partnerCanvas');
+        const mCtx = mC.getContext('2d'), pCtx = pC.getContext('2d');
+
+        function res() {
+            mC.width = mC.clientWidth; mC.height = mC.clientHeight;
+            pC.width = pC.clientWidth; pC.height = pC.clientHeight;
+        }
+        window.onresize = res; setTimeout(res, 500);
+
+        // --- DIBUJO ---
+        let draw = false, lx = 0, ly = 0;
+        const getXY = (e) => {
+            const r = mC.getBoundingClientRect();
+            const cX = e.touches ? e.touches[0].clientX : e.clientX;
+            const cY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [cX - r.left, cY - r.top];
         };
 
-        onValue(ref(db, 'game'), (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
+        const dLine = (ctx, x1, y1, x2, y2, c, sz) => {
+            ctx.strokeStyle = c; ctx.lineWidth = sz; ctx.lineCap = "round"; ctx.lineJoin = "round";
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        };
 
-            if (data.status === 'playing') {
-                document.getElementById('game-overlay').classList.add('hidden');
-                document.getElementById('results-overlay').classList.add('hidden');
-                document.getElementById('word-display').innerText = data.word;
-                updateTimer(data.startTime);
-            } else if (data.status === 'finished') {
-                document.getElementById('results-overlay').classList.remove('hidden');
+        mC.addEventListener('mousedown', (e) => { draw = true; [lx, ly] = getXY(e); });
+        mC.addEventListener('touchstart', (e) => { draw = true; [lx, ly] = getXY(e); }, {passive:false});
+
+        const handleMove = (e) => {
+            if (!draw) return;
+            if (e.cancelable) e.preventDefault();
+            const [x, y] = getXY(e);
+            const col = document.getElementById('color').value;
+            const sz = document.getElementById('size').value;
+            
+            dLine(mCtx, lx, ly, x, y, col, sz);
+            push(ref(db, `drawings/${myName}`), { x1: lx, y1: ly, x2: x, y2: y, c: col, s: sz, w: mC.width, h: mC.height });
+            [lx, ly] = [x, y];
+        };
+
+        mC.addEventListener('mousemove', handleMove);
+        mC.addEventListener('touchmove', handleMove, {passive:false});
+        window.addEventListener('mouseup', () => draw = false);
+        window.addEventListener('touchend', () => draw = false);
+
+        // --- TIEMPO REAL (VER AL OTRO) ---
+        // Escuchamos cuando el OTRO añade un trazo nuevo
+        onChildAdded(ref(db, `drawings/${partnerName}`), (snap) => {
+            const d = snap.val();
+            const rx = pC.width / d.w;
+            const ry = pC.height / d.h;
+            dLine(pCtx, d.x1*rx, d.y1*ry, d.x2*rx, d.y2*ry, d.c, d.s);
+        });
+
+        // También escuchamos el tuyo para que al recargar se mantenga
+        onChildAdded(ref(db, `drawings/${myName}`), (snap) => {
+            const d = snap.val();
+            const rx = mC.width / d.w;
+            const ry = mC.height / d.h;
+            dLine(mCtx, d.x1*rx, d.y1*ry, d.x2*rx, d.y2*ry, d.c, d.s);
+        });
+
+        // --- LÓGICA DE JUEGO ---
+        let timer;
+        onValue(ref(db, 'state'), (snap) => {
+            const st = snap.val();
+            if (st && st.status === 'playing') {
+                document.getElementById('overlay').classList.add('hidden');
+                document.getElementById('word').innerText = st.word;
+                clearInterval(timer);
+                timer = setInterval(() => {
+                    const diff = Math.max(0, Math.round((st.endTime - Date.now()) / 1000));
+                    document.getElementById('timer').innerText = `00:${diff < 10 ? '0' : ''}${diff}`;
+                    if (diff <= 0) { clearInterval(timer); set(ref(db, 'state/status'), 'idle'); }
+                }, 1000);
             } else {
-                document.getElementById('game-overlay').classList.remove('hidden');
+                document.getElementById('overlay').classList.remove('hidden');
+                mCtx.clearRect(0,0,mC.width,mC.height); pCtx.clearRect(0,0,pC.width,pC.height);
             }
         });
 
-        function updateTimer(startTime) {
-            const timerInt = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const left = 60 - elapsed;
-                if (left <= 0) {
-                    clearInterval(timerInt);
-                    set(ref(db, 'game/status'), 'finished');
-                } else {
-                    document.getElementById('timer').innerText = `00:${left < 10 ? '0' : ''}${left}`;
-                }
-            }, 1000);
-        }
-
-        // --- DIBUJO ---
-        let drawing = false;
-        myCanvas.onmousedown = () => drawing = true;
-        window.onmouseup = () => { drawing = false; mCtx.beginPath(); };
-
-        myCanvas.onmousemove = (e) => {
-            if (!drawing) return;
-            const rect = myCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const color = document.getElementById('colorPicker').value;
-            const size = document.getElementById('sizePicker').value;
-
-            // Dibujo local
-            mCtx.strokeStyle = color;
-            mCtx.lineWidth = size;
-            mCtx.lineCap = "round";
-            mCtx.lineTo(x, y);
-            mCtx.stroke();
-            mCtx.beginPath();
-            mCtx.moveTo(x, y);
-
-            // Guardar en Firebase
-            push(ref(db, `drawings/${myId}`), { x, y, color, size, w: myCanvas.width, h: myCanvas.height });
+        document.getElementById('startBtn').onclick = () => {
+            const w = ["PIZZA", "GATO", "PLAYA", "ANILLO", "HELADO", "UN BEBÉ", "CASTILLO"];
+            set(ref(db, 'state'), { status: 'playing', word: w[Math.floor(Math.random()*w.length)], endTime: Date.now() + 60000 });
+            remove(ref(db, 'drawings'));
         };
 
-        // Escuchar el dibujo de la pareja
-        onValue(ref(db, 'drawings'), (snapshot) => {
-            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-            mCtx.clearRect(0, 0, myCanvas.width, myCanvas.height);
-            
-            snapshot.forEach(userShot => {
-                const points = userShot.val();
-                const ctx = userShot.key === myId ? mCtx : pCtx;
-                const cnv = userShot.key === myId ? myCanvas : pCanvas;
-                
-                ctx.beginPath();
-                Object.values(points).forEach(p => {
-                    ctx.strokeStyle = p.color;
-                    ctx.lineWidth = p.size;
-                    ctx.lineCap = "round";
-                    const rx = cnv.width / p.w;
-                    const ry = cnv.height / p.h;
-                    ctx.lineTo(p.x * rx, p.y * ry);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(p.x * rx, p.y * ry);
-                });
-            });
-        });
-
-        window.vote = (type) => {
-            alert(type === 'me' ? "¡Esa es la actitud! 😂" : "¡Qué tierno de tu parte! 😍");
-        };
-
-        document.getElementById('resetBtn').onclick = () => set(ref(db, 'game/status'), 'idle');
-        window.clearMyCanvas = () => remove(ref(db, `drawings/${myId}`));
-
+        document.getElementById('reset').onclick = () => set(ref(db, 'state/status'), 'idle');
+        window.clearDraw = () => remove(ref(db, `drawings/${myName}`));
     </script>
 </body>
 </html>
